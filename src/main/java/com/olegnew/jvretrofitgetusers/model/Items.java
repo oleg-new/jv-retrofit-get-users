@@ -50,7 +50,7 @@ public class Items {
     private String userType;
 
     @SerializedName("user_id")
-    private Long userId;
+    private int userId;
 
     @SerializedName("location")
     private String location;
