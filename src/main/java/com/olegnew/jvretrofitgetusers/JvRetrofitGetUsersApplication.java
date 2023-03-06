@@ -11,8 +11,8 @@ public class JvRetrofitGetUsersApplication {
         System.out.println("Result");
         SpringApplication.run(JvRetrofitGetUsersApplication.class, args);
         Parser parser = new Parser();
-       // System.out.println(parser.getUsers());
-        System.out.println(parser.countOfQuestions(22656));
+        System.out.println(parser.getUsers());
+        //System.out.println(parser.countOfQuestions(22656));
     }
 
 }

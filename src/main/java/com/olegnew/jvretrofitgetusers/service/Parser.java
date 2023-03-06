@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 @Component
@@ -24,7 +23,6 @@ public class Parser {
             Arrays.asList("Moldova","Romania", "France"));
     private static Set<Items> resultList = new HashSet<>();
     private static List<Items> resultItemsList = new ArrayList<>();
-    //private static int answerResult ;
     private static boolean cycle = true;
     private ItemService itemService = ApiUtils.getItemService();
     private int curentPage = 1;
@@ -44,55 +42,44 @@ public class Parser {
                 "reputation",
                 223,
                 "stackoverflow");
-        listCall.enqueue(new Callback<UsersData>() {
-            @Override
-            public void onResponse(Call<UsersData> call, Response<UsersData> response) {
-                if (response.code() == 200) {
-                    List<Items> items = response.body().getItems();
-                    selectionByCountryAndTag(items);
-                    curentPage++;
-                } else {
-                    cycle = false;
-                }
+        try {
+            Response<UsersData> response = listCall.execute();
+            if (response.code() == 200) {
+                List<Items> items = response.body().getItems();
+                selectionByCountryAndTag(items);
+                curentPage++;
+            } else {
+                cycle = false;
             }
-
-            @Override
-            public void onFailure(Call<UsersData> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return resultItemsList;
     }
 
     public int countOfAnswers(Items current) {
-        final int[] answerResult = {0};
-        Call<UsersData> answertCall = itemService.
-                getUserDetailAnswers(current.getUserId(), "stackoverflow");
-        answertCall.enqueue(new Callback<UsersData>() {
-            @Override
-            public void onResponse(Call<UsersData> call, Response<UsersData> response) {
-                if (response.code() == 200) {
-                    answerResult[0] = response.body().getItems().size();
-                }
+        int answerResult = 0;
+        Call<UsersData> answerCall = itemService
+                .getUserDetailAnswers(current.getUserId(), "stackoverflow");
+        try {
+            Response<UsersData> response = answerCall.execute();
+            if (response.body() != null && response.body().getItems() != null) {
+                answerResult = response.body().getItems().size();
             }
-
-            @Override
-            public void onFailure(Call<UsersData> call, Throwable t) {
-
-            }
-        });
-        return answerResult[0];
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return answerResult;
     }
 
-    //public int countOfQuestions(Items current) {
-    public int countOfQuestions(int current) {
+    public int countOfQuestions(Items currentItem) {
         int questionResult = 0;
-        Call<UsersData> questionCall = itemService.getUserDetailQuestions(current, "stackoverflow");
+        Call<UsersData> questionCall = itemService
+                .getUserDetailQuestions(currentItem.getUserId(), "stackoverflow");
 
         try {
             Response<UsersData> response = questionCall.execute();
             questionResult = response.body().getItems().size();
-            //return questionResult;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -101,15 +88,17 @@ public class Parser {
 
     private void selectionByCountryAndTag(List<Items> inputList) {
         for (Items currenrItems : inputList) {
-            int countAnswer = countOfAnswers(currenrItems);
             if (currenrItems.getLocation() != null
                     && currenrItems.getCollectives() != null
                     && currenrItems.getCollectives().get(0).getCollective().getTags() != null
                     && isCorrectLocation(currenrItems,locationList)
-                    && isTagInCollectives(currenrItems, tagList)
-                    && countAnswer != 0) {
-                currenrItems.setAnswerCount(countAnswer);
-                resultList.add(currenrItems);
+                    && isTagInCollectives(currenrItems, tagList)) {
+                int countAnswer = countOfAnswers(currenrItems);
+                if (countAnswer != 0) {
+                    currenrItems.setAnswerCount(countAnswer);
+                    currenrItems.setQuestionCount(countOfQuestions(currenrItems));
+                    resultList.add(currenrItems);
+                }
             }
         }
     }
