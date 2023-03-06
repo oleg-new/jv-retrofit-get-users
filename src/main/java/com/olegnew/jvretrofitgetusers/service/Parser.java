@@ -18,16 +18,16 @@ import retrofit2.Response;
 @Component
 public class Parser {
     private static final List<String> tagList = new ArrayList<>(
-            Arrays.asList("java", ".net", "docker", "C#", "google-cloud-code"));
+            Arrays.asList("java", ".net", "docker", "C#"));
     private static final List<String> locationList = new ArrayList<>(
-            Arrays.asList("Moldova","Romania", "France"));
-    private static Set<Items> resultList = new HashSet<>();
-    private static List<Items> resultItemsList = new ArrayList<>();
+            Arrays.asList("Moldova","Romania"));
+    private static final List<Items> resultList = new ArrayList<>();
+    private static final List<Items> resultItemsList = new ArrayList<>();
     private static boolean cycle = true;
-    private ItemService itemService = ApiUtils.getItemService();
+    private final ItemService itemService = ApiUtils.getItemService();
     private int curentPage = 1;
 
-    public Set<Items> getUsers() {
+    public List<Items> getUsers() {
         while (cycle) {
             getAllPage(curentPage);
         }

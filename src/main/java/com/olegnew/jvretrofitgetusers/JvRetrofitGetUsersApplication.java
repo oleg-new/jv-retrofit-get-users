@@ -8,11 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class JvRetrofitGetUsersApplication {
 
     public static void main(String[] args) {
-        System.out.println("Result");
         SpringApplication.run(JvRetrofitGetUsersApplication.class, args);
         Parser parser = new Parser();
         System.out.println(parser.getUsers());
-        //System.out.println(parser.countOfQuestions(22656));
     }
 
 }
